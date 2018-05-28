@@ -70,8 +70,10 @@ class JobDispatcher:
     except:
       self.status_line = 'Git status not available'
 
-  def load_base_config(self, base='baseParams'):
+  def load_base_config(self, base ='baseParams'):
     # Loads the base parameterization, initializing all parameters to sensible defaults
+    if self.cmd_args.GPe == 2:
+        base ='baseParams2GPe'
     params = importlib.import_module(base).params
     self.params.update(params)
 
@@ -136,7 +138,10 @@ class JobDispatcher:
       # LOCAL EXECUTION #
       ###################
       # just launch the script
-      command = 'python '+params['whichTest']+'.py'
+      if self.cmd_args.GPe == 2:
+          command = 'python '+params['whichTest']+'2GPe.py'
+      else:
+          command = 'python '+params['whichTest']+'.py'
       
     elif self.platform == 'clusterISIR':
       ##########################
@@ -372,7 +377,10 @@ class JobDispatcher:
     # replace values to be set at runtime (for now, only used when "nbcpu=-1")
     self.expandValues()
     # initialize the file list to transfer
-    self.files_to_transfer = ['solutionDict.py','LGneurons.py', 'testFullBG.py', 'testChannelBG.py', 'nstrand.py', '__init__.py']
+    if self.cmd_args.GPe == 2:
+        self.files_to_transfer = ['solutionDict2GPe.py','LGneurons2GPe.py', 'testFullBG2GPe.py', 'testChannelBG2GPe.py', 'nstrand.py', '__init__.py']
+    else:
+        self.files_to_transfer = ['solutions_simple_unique.csv','LGneurons.py', 'testFullBG.py', 'testChannelBG.py', 'nstrand.py', '__init__.py']
     # performs the recurrent exploration of parameterizations to run
     self.recParamExplo(self.params)
 
@@ -397,6 +405,7 @@ def main():
     Optional.add_argument('--nestSeed', type=int, help='Nest seed (affects the Poisson spike train generator)', default=None)
     Optional.add_argument('--pythonSeed', type=int, help='Python seed (affects connection map)', default=None)
     Optional.add_argument('--mock', action="store_true", help='Does not start the simulation, only writes experiment-specific directories', default=False)
+    Optional.add_argument('--GPe',type=int, help='Which kind of GPe to simulate ? split = 2, not split = 1', default=None)
     
     cmd_args = parser.parse_args()
     
